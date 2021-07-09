@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        <!-- Bootstrap CSS -->
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <!-- <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script> -->
+    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
+    <title>Meet n Eat</title>
+    </head>
+    <body  style="background-color: #70e3f5;">       
+        
+        <div class="text-center container" style="margin-top: 15px;"><h1 class="p-3 mb-2 text-white container" style="background-color: #229eb1; border-radius: 25px; padding: 0% 20% 0% 20%;">MEET <span style="color:rgb(248, 6, 87)">n</span> EAT</h1>
+        </div>
+        <br>
+        <div>
+            <figure class="text-center">
+                <blockquote class="blockquote">
+                    <p><h3>" Morle khaiya mormu "</h3></p>
+                </blockquote>
+                <figcaption class="blockquote-footer">
+                    By... <cite title="Source Title">A random petuk bangali</cite>
+                </figcaption>
+            </figure>
+        </div>
+        <div class="text-center container" style="padding-left: 15%; padding-right: 15%;">
+            <div style="background-color: #7db614; border: 0px; border-radius: 24px;">
+                {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                  {% for msg in messages %}
+                    <p>{{msg}}</p>
+                  {% endfor %}
+                {% endif %}
+              {% endwith %}
+            </div>
+            
+                <a href="/login" type="button" style="border-radius: 24px; color: black; text-align: left; margin-right: 3%;" class="btn btn-outline-info">Login</a>
+                <a href="/signup" type="button" style="border-radius: 24px; color: black; text-align: right; margin-left: 3%;" class="btn btn-outline-info">Signup</a>
+                    
+        </div>    
+    </body>
+    </html>

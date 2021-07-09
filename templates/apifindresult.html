@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+  {% block ttl %}
+  <title>Search Result</title>
+  {% endblock ttl %}
+
+  {% block ttl2bd %}
+  <br>
+      <h3 class="text-center container"> All available resturants...</h3>
+    <div>
+        <table class="table table-borderless">
+            <thead>
+                <tr>
+                  <th scope="col">Resturant ID</th>
+                  <th scope="col">Resturant Name</th>
+                  <th scope="col">Location</th>
+                  <th scope="col">Foods Available</th>
+                </tr>
+              </thead>
+              <tbody>
+                  
+                  {% for i in srchrslt %}
+                  <tr>
+                      <th scope="row">{{i.id}}</th>
+                      <td>{{i.name}}</td>
+                      <td>{{i.loct}}</td>
+                      <td>{{i.food}}</td>
+                    </tr>
+                    {% endfor %}
+                    
+              </tbody>    
+        </table>
+    </div>
+  {% endblock ttl2bd %}

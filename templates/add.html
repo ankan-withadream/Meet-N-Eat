@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+  {% block ttl %}
+  <title>Add Resturant</title>
+  {% endblock ttl %}
+
+  {% block ttl2bd %}
+  <br>
+  {% if adding_food==True %}
+  <h3 class="text-center container"> Add a food...</h3>
+  {% else %}
+    {% if suggesting==True %}
+    <h3 class="text-center container"> Add your suggestion...</h3>
+    {% else %}
+  <h3 class="text-center container"> Add Your Resturant here...</h3>
+    {% endif %}
+  {% endif %}
+      <br>
+    <div>
+      {% if adding_food==True %}
+      <form class="text-center container" action="/foods/add" method="POST">
+          <div class="row g-3 align-items-center">
+            <div class="col-auto">
+              <label for="inputPassword6" class="col-form-label">Add a food name here.. </label>
+            </div>
+            <div class="col-auto">
+              <input type="text" id="inputPassword6" name="rstrnt_name" class="form-control" aria-describedby="passwordHelpInline">
+            </div>
+          </div>
+          <br>
+          <button type="submit" class="btn btn-primary">Add</button>
+        </form>
+        {% else %}
+          {% if suggesting==True %}
+          <form class="text-center container" action="/suggest/update/{{rst_id}}" method="POST">
+            <div class="row g-3 align-items-center">
+                <div class="col-auto">
+                  <label for="inputPassword6" class="col-form-label">Suggest the resturant name here.. </label>
+                </div>
+                <div class="col-auto">
+                  <input type="text" id="inputPassword6" value="{{old_name}}" name="new_name" class="form-control" aria-describedby="passwordHelpInline">
+                </div>
+              </div>
+              <br>
+              <div class="row g-3 align-items-center">
+                <div class="col-auto">
+                  <label for="inputPassword6" class="col-form-label">Enter the Resturant's address here.. </label>
+                </div>
+                <div class="col-auto">
+                  <input type="text" id="inputPassword6" value="{{old_loct}}" name="new_loct" class="form-control" aria-describedby="passwordHelpInline">
+                </div>
+              </div>
+              <br>
+              <button type="submit" class="btn btn-primary">Add</button>
+            </form>
+          {% else %}
+        <form class="text-center container" action="/add" method="POST">
+          <div class="row g-3 align-items-center">
+              <div class="col-auto">
+                <label for="inputPassword6" class="col-form-label">Add a resturant name here.. </label>
+              </div>
+              <div class="col-auto">
+                <input type="text" id="inputPassword6" name="rstrnt_name" class="form-control" aria-describedby="passwordHelpInline">
+              </div>
+            </div>
+            <br>
+            <div class="row g-3 align-items-center">
+              <div class="col-auto">
+                <label for="inputPassword6" class="col-form-label">Enter the Resturant's address here.. </label>
+              </div>
+              <div class="col-auto">
+                <input type="text" id="inputPassword6" name="rstrnt_loct" class="form-control" aria-describedby="passwordHelpInline">
+              </div>
+            </div>
+            <br>
+            <button type="submit" class="btn btn-primary">Add</button>
+          </form>
+            {% endif %}
+          {% endif %}
+    </div>
+  {% endblock ttl2bd %}

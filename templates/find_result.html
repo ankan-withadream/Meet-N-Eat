@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+  {% block ttl %}
+  <title>Resturants Results</title>
+  {% endblock ttl %}
+
+  {% block ttl2bd %}
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Resturant Name</th>
+            <th scope="col">Address</th>
+            <th scope="col">Foods available</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in src_rslt %}
+            
+          <tr>
+            <th scope="row">{{i.id}}</th>
+            <td>{{i.rstrnt_name}}</td>
+            <td>{{i.rstrnt_loct}}</td>
+            <td>@mdo</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endblock ttl2bd %}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+  {% block ttl %}
+  <title>All Foods</title>
+  {% endblock ttl %}
+
+  {% block ttl2bd %}
+  <br>
+      <h3 class="text-center container"> All pending suggestions...</h3>
+    <div>
+        <table class="table table-borderless">
+            <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Suggested Name</th>
+                  <th scope="col">Suggested Location</th>
+                  <th scope="col">For Resturant ID</th>
+                  <th scope="col">   </th>
+                </tr>
+              </thead>
+              <tbody>
+                  
+                  {% for i in sgsts %}
+                  <tr>
+                      <th scope="row">{{loop.index}}</th>
+                      <td>{{i.new_name}}</td>
+                      <td>
+                        {{(i.new_address).replace('+', " ")}}
+                      </td>
+                      <td>{{i.req_rst_id}}
+                      </td>
+                      <td>
+                          <a href="/suggestion/update/{{i.req_id}}/{{i.req_rst_id}}" type="button" class="btn btn-outline-dark">Approve</button>
+                          <a href="/suggestion/delete/{{i.req_id}}" type="button" class="btn btn-outline-dark">Delete</button>
+                          </td>
+                    </tr>
+                    {% endfor %}
+                    
+              </tbody>    
+        </table>
+    </div>
+
+
+  
+  {% endblock ttl2bd %}

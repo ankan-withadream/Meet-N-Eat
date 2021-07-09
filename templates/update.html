@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+  {% block ttl %}
+  <title>Update Resturant</title>
+  {% endblock ttl %}
+
+  {% block ttl2bd %}
+  <br>
+      <h3 class="text-center container"> Update a resturant's information...</h3>
+      <br>
+    <div>
+        <form class="text-center container" action="/update/{{updt_rstrnt.id}}" method="POST">
+            <div class="row g-3 align-items-center">
+              <div class="col-auto">
+                <label for="inputPassword6" class="col-form-label">Resturant Name ? </label>
+              </div>
+              <div class="col-auto">
+                <input type="text" id="inputPassword6" name="name" value="{{updt_rstrnt.rstrnt_name}}" class="form-control" aria-describedby="passwordHelpInline">
+              </div>
+            </div>
+            <br>
+            <div class="row g-3 align-items-center">
+              <div class="col-auto">
+                <label for="inputPassword6" class="col-form-label">Location ? </label>
+              </div>
+              <div class="col-auto">
+                <input type="text" id="inputPassword6" name="loct" value="{{updt_rstrnt.rstrnt_loct}}" class="form-control" aria-describedby="passwordHelpInline">
+              </div>
+            </div>
+            <br>
+            <button type="submit" class="btn btn-primary">Add</button>
+          </form>
+    </div>
+  {% endblock ttl2bd %}

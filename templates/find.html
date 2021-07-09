@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+  {% block ttl %}
+  <title>Add Resturant</title>
+  {% endblock ttl %}
+
+  {% block ttl2bd %}
+  <br>
+      <h3 class="text-center container"> Search for a resturant...</h3>
+      <br>
+    <div>
+        <form class="text-center container" action="/find" method="POST">
+            <div class="row g-3 align-items-center">
+              <div class="col-auto">
+                <label for="inputPassword6" class="col-form-label">Which food do you want?.. </label>
+              </div>
+              <div class="col-auto">
+                <input type="text" id="inputPassword6" name="food2find" value="Food name" class="form-control" aria-describedby="passwordHelpInline">
+              </div>
+            </div>
+            <br>
+            <div class="row g-3 align-items-center">
+              <div class="col-auto">
+                <label for="inputPassword6" class="col-form-label">Enter the location here.. </label>
+              </div>
+              <div class="col-auto">
+                <input value="City name" type="text" id="inputPassword6" name="rstrnt_loct" class="form-control" aria-describedby="passwordHelpInline">
+              </div>
+            </div>
+            <br>
+            <button type="submit" class="btn btn-primary">Find</button>
+          </form>
+    </div>
+      {% endblock ttl2bd %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+  {% block ttl %}
+  <title>All Available Resturant</title>
+  {% endblock ttl %}
+
+  {% block ttl2bd %}
+  <br>
+      <h3 class="text-center container"> All available resturants for {{food_name}}...</h3>
+    <div>
+        <table class="table table-borderless">
+            <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Resturant Name</th>
+                  <th scope="col">Location</th>
+                  <th scope="col">Foods Available</th>
+                </tr>
+              </thead>
+              <tbody>
+                  
+                  {% for i in rst_lst %}
+                  <tr>
+                      <th scope="row">{{i["resturant_id"]}}</th>
+                      <td>{{i["resturant_name"]}}</td>
+                      <td>
+                        {{i["resturant_loct"]}}
+                      </td>
+                      <td><a href="/resturants/foods/{{i['resturant_id']}}" type="button" class="btn btn-outline-dark">All Available Foods</button>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                    
+              </tbody>    
+        </table>
+    </div>
+  {% endblock ttl2bd %}

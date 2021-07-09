@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+  {% block ttl %}
+  <title>Resturants Results</title>
+  {% endblock ttl %}
+
+  {% block ttl2bd %}
+  <div class="text-center">
+    <div style="background-color: #7db614; border: 0px; border-radius: 24px;">
+      {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <p>{{msg}}</p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div><br>
+<h3>You are now logged in. Now do something :)
+</h3><br>
+<a class="btn btn-outline-dark" href="/get_token"> <h5>Grab your token</h5></a>
+<br><br>
+<a class="btn btn-outline-dark" href="/logout"> Logout here</a>
+</div>
+
+{% if token %}
+<div class="text-center container-fluid" style="box-sizing: border-box; margin-top: 4%;"><br><br><br>
+    <h4>Here is your token</h4>
+    <div style="box-sizing: border-box;">
+    <p class="text-center" style="padding: 2%;">
+    {{token}}</p>
+    <h7>This will only be valid for 10 minutes. Please do not share it with anyone :)</h7>
+</div>
+{% endif %}
+  {% endblock ttl2bd %}

@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+  {% block ttl %}
+  <title>All Foods</title>
+  {% endblock ttl %}
+
+  {% block ttl2bd %}
+  <div style="background-color: #7db614; border: 0px; border-radius: 24px;">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <p>{{msg}}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+</div>
+  <br>
+      <h3 class="text-center container"> All available foods...</h3>
+      <div>
+        <table class="table table-borderless">
+            <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Food Name</th>
+                  <th scope="col">Resturants Available</th>
+                  <th scope="col">   </th>
+                </tr>
+              </thead>
+              <tbody>
+                  {% if showing_food==True %}
+                    {% for i in range(fdlen) %}
+                  <tr>
+                      <th scope="row">{{loop.index}}</th>
+                      <td>{{food_name_lst[i]}}</td>
+                      <td>
+                        <a href="/foods/resturants/{{food_lst[i]}}" type="button" class="btn btn-outline-dark">View</button>
+                        
+                      </td>
+                      {% if session['is_admin'] %}
+                        <td>
+                        <a href="/resturants/foods/delete/{{rst_id}}/{{food_lst[i]}}" type="button" class="btn btn-outline-dark">Delete</button>
+                        </td>
+                      {% endif %}
+                    </tr>
+                    {% endfor %}
+
+                  {% else %}
+                    
+                    {% for i in foods %}
+                  <tr>
+                      <th scope="row">{{i.id}}</th>
+                      <td>{{i.name}}</td>
+                      <td>
+                        <a href="/foods/resturants/{{i.id}}" type="button" class="btn btn-outline-dark">View</button>
+                        
+                      </td>
+                      {% if session['is_admin'] %}
+                      <td>
+                        <a href="/foods/delete/{{i.id}}" type="button" class="btn btn-outline-dark">Delete</button>
+                      </td>
+                      {% endif %}
+                    </tr>
+                    {% endfor %}
+                    
+                  </tbody>    
+                </table>
+          </div>
+              {% endif %}
+              {% if showing_food==True %}
+              <form class="text-center container" action="/resturants/foods/add/{{rst_id}}" method="POST">
+                <div class="row g-3 align-items-center">
+                  <div class="col-auto">
+                    <label for="inputPassword6" class="col-form-label">Add a food item in this resturant. </label>
+                  </div>
+                  <div class="col-auto">
+                    <input type="text" id="inputPassword6" name="food_name" class="form-control" aria-describedby="passwordHelpInline">
+                  </div>
+                </div>
+                <br>
+                <button type="submit" class="btn btn-primary">Add</button>
+              </form>
+              {% endif %}
+  {% endblock ttl2bd %}
