@@ -11,6 +11,7 @@ from flask_bcrypt import Bcrypt
 from functools import wraps
 import jwt
 import datetime
+from werkzeug.exceptions import HTTPException
 
 
 app = Flask(__name__)
@@ -24,6 +25,7 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not 'user' in session:
+            flash('You need to login first :(')
             return redirect(url_for('login', next=request.url))
         return f(*args, **kwargs)
     return decorated_function
@@ -53,6 +55,16 @@ def admin_required(f):
             flash("Sorry you are not an admin :(")
             return redirect("/home")
     return decorated_function
+
+@app.errorhandler(HTTPException)   #Error handling
+def handle_exception(e):
+    response = str(e.code) + " error: " + str(e.name) + " :( "
+    if 'user' in session:
+        flash(response)
+        return redirect("/home")
+    else:
+        flash(response)
+        return redirect("/")
 
 class users(db.Model, UserMixin):
     id = db.Column(db.Integer, unique=True)
@@ -131,8 +143,11 @@ def all_resturants():
     return render_template('all_resturants.html', rstrnt=show_rstrnt)
 
 @app.route("/resturants/foods/<int:id>")
-@owner_or_admin_required
+@login_required
 def show_available_foods(id):
+    if not rstrnt.query.filter_by(id=id).first(): #Exception Handling -- If wrong resturant id entered
+        flash("No such restaurant found :(")
+        return redirect("/resturants")
     showing_food = True
     food_lst = []
     food_name_lst = []
@@ -140,7 +155,7 @@ def show_available_foods(id):
     for i in fds:
         for j in i.rstrnt_ids:
             if (int(j)==id):
-                fdid = int(i.food_id)
+                fdid = i.food_id
                 food_lst.append(fdid)
     for i in food_lst:
         x = food.query.get(i)
@@ -153,6 +168,9 @@ def show_available_foods(id):
 @owner_or_admin_required
 def add_food_in_resturant(rst_id):
     if request.method=='POST':
+        if not rstrnt.query.filter_by(id=id).first(): #Exception Handling -- If wrong resturant id entered
+            flash("No such restaurant found :(")
+            return redirect(f"/resturants")
         food2badd_name = request.form['food_name']
         fds = food.query.all()
         for i in fds:
@@ -176,6 +194,12 @@ def add_food_in_resturant(rst_id):
 @login_required
 @owner_or_admin_required
 def delete_food_from_resturant(rst_id, food_id):
+    if not rstrnt.query.filter_by(id=rst_id).first(): #Exception Handling -- If wrong resturant id entered
+        flash("No such restaurant found :(")
+        return redirect(f"/resturants")
+    elif not resturant_availabelity.query.filter_by(food_id=food_id).first(): #Exception Handling -- If wrong food id entered
+        flash("No such food item found :( ")
+        return redirect(f"/resturants/foods/{rst_id}")
     to_be_dlt = resturant_availabelity.query.get(food_id)
     new_rstids = to_be_dlt.rstrnt_ids.replace(str(rst_id), "")
     db.session.delete(to_be_dlt)
@@ -190,6 +214,9 @@ def all_foods():
 
 @app.route("/foods/resturants/<int:id>") 
 def resturants_available_forthis_food(id):
+    if not food.query.get(id): #Exception Handling -- If wrong food id entered
+        flash("No such food item found :(")
+        return redirect("/foods")
     the_food = resturant_availabelity.query.get(id)
     food_name = (food.query.get(id)).name
     rsts = the_food.rstrnt_ids
@@ -205,13 +232,18 @@ def resturants_available_forthis_food(id):
 def add_food():
     adding_food = True
     if request.method=='POST':
-        this_food = food(name=request.form['rstrnt_name'])
+        name=request.form['rstrnt_name']
+        if food.query.filter_by(name=name).first(): #Exception Handling -- If wrong food id entered
+            flash("Food Item already added")
+            return redirect("/foods")
+        this_food = food(name=name)
         db.session.add(this_food)
         db.session.commit()
         food_id = this_food.id
         this_food_ra = resturant_availabelity(food_id=food_id, rstrnt_ids="")
         db.session.add(this_food_ra)
         db.session.commit()
+        flash("Food added in list :) ")
         return redirect("/foods/add")
         
     return render_template("add.html", adding_food=adding_food)
@@ -220,7 +252,11 @@ def add_food():
 @login_required
 @admin_required
 def delete_food(id):
-    get_food = food.query.get(id)
+    try: #Exception Handling -- If wrong food id entered
+        get_food = food.query.get(id)
+    except Exception:
+        flash("Wrong food id provided in the url -_-")
+        return redirect("/foods")
     get_food_from_ra = resturant_availabelity.query.get(id)
     db.session.delete(get_food)
     db.session.delete(get_food_from_ra)
@@ -231,6 +267,9 @@ def delete_food(id):
 @login_required
 @admin_required
 def update_rstrnt(id):
+    if not rstrnt.query.filter_by(id=id).first(): #Exception Handling -- If wrong resturant id entered
+        flash("Wrong resturant id given in url :(")
+        return redirect("/resturants")
     updt_rstrnt = rstrnt.query.filter_by(id=id).first()
     if request.method == 'POST':
         updt_rstrnt.rstrnt_name = request.form['name']
@@ -243,8 +282,11 @@ def update_rstrnt(id):
 @login_required
 @admin_required
 def dlt_rstrnt(id):
-    dlt_r=rstrnt.query.filter_by(id=id).first()
-    db.session.delete(dlt_r)
+    if not rstrnt.query.filter_by(id=id).first(): #Exception Handling -- If wrong resturant id entered
+        flash("Wrong resturant id given in url :(")
+        return redirect("/resturants")
+    dlt_rst = rstrnt.query.filter_by(id=id).first()
+    db.session.delete(dlt_rst)
     db.session.commit()
     return redirect("/resturants")
 
@@ -262,11 +304,16 @@ def add_resturant():
         if request.method == 'POST':
             loct = str(request.form['rstrnt_loct']).replace(" ", '+')
             new_rstrnt = rstrnt(rstrnt_name=request.form['rstrnt_name'], rstrnt_loct=loct)
-            db.session.add(new_rstrnt)
-            db.session.commit()
-            if check_user.is_owner == True:
-                check_user.owned_rst_id = new_rstrnt.id
+            try:            #Exception Handling -- If resturant name already exists
+                db.session.add(new_rstrnt)
                 db.session.commit()
+                if check_user.is_owner == True:
+                    check_user.owned_rst_id = new_rstrnt.id
+                    db.session.commit()
+                return redirect("/add")
+            except Exception:
+                flash("This resturant is already added")
+                db.session.rollback()
             next = session['next']
             if next:
                 return redirect(next)
@@ -324,7 +371,6 @@ def get_rstrnts(username, password, token, address):
     get_usr = users.query.filter_by(username=username).first()
     token_user = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS512')
     token_username = token_user['data']
-    print(token_username)
     if bcrypt.check_password_hash(get_usr.password, password):
         if token_username==get_usr.username:
             get_rstrnt = rstrnt.query.filter_by(rstrnt_loct=address_replaced).all()
@@ -349,6 +395,9 @@ def get_token():
 @app.route("/suggest/update/<int:id>", methods=['GET', 'POST'])
 @login_required
 def suggested_update(id):
+    if not rstrnt.query.filter_by(id=id).first(): #Exception Handling -- If wrong resturant id given
+        flash("Wrong resturant id given in url :(")
+        return redirect("/resturants")
     rst = rstrnt.query.filter_by(id=id).first()
     old_loct = rst.rstrnt_loct.replace("+", " ")
     suggesting = True
@@ -359,6 +408,7 @@ def suggested_update(id):
         suggest = update_req(req_rst_id=id, new_name=name, new_address=loct_replaced)
         db.session.add(suggest)
         db.session.commit()
+        flash("Your valuable suggestion has been successfully sent to server ^_^")
         return redirect("/resturants")
     return render_template('add.html', suggesting=suggesting, old_name=rst.rstrnt_name, old_loct=old_loct, rst_id=id)
 
@@ -373,6 +423,12 @@ def show_suggesstions():
 @login_required
 @admin_required
 def approve_suggestions(req_id, rst_id):
+    if not rstrnt.query.filter_by(id=rst_id).first(): #Exception Handling -- If wrong resturant id entered
+        flash("Wrong resturant id given in url :(")
+        return redirect("/suggestion")
+    elif not update_req.query.filter_by(req_id=req_id).first(): #Exception Handling -- If wrong suggestion id entered
+        flash("Wrong suggestion id given in url :(")
+        return redirect("/suggestion")
     rst = rstrnt.query.filter_by(id=rst_id).first()
     req = update_req.query.filter_by(req_id=req_id).first()
     rst.rstrnt_name = req.new_name
@@ -385,6 +441,9 @@ def approve_suggestions(req_id, rst_id):
 @login_required
 @admin_required
 def delete_suggestion(req_id):
+    if not update_req.query.filter_by(req_id=req_id).first(): #Exception Handling -- If request id does not exist
+        flash("Wrong suggestion id given in url :(")
+        return redirect("/suggestion")
     req = update_req.query.filter_by(req_id=req_id).first()
     db.session.delete(req)
     db.session.commit()
@@ -395,8 +454,12 @@ def signup():
     form=signup_form()
     if request.method=='POST':
         if form.validate_on_submit():
+            username = form.username.data
+            if users.query.filter_by(username=username).first(): #Exception Handling --if username already exists
+                flash("This username already exists. Try diffrent one")
+                return redirect("/signup")
             h_pass = bcrypt.generate_password_hash(form.password.data)
-            user = users(username=form.username.data, password=h_pass)
+            user = users(username=username, password=h_pass)
             db.session.add(user)
             db.session.commit()
             if request.form["is_owner"] == "true":
@@ -407,6 +470,9 @@ def signup():
                 db.session.commit()
             flash("Account has been created :)")
             return redirect("/login")
+        else:
+            flash("Username must be minimum of 4 and maximum of 10 characters")
+            return redirect("/signup")
     return render_template("signup.html", form=form)
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -415,7 +481,7 @@ def login():
     if request.method == 'POST':
         if form.validate_on_submit():
             check_usr = users.query.filter_by(username=form.username.data).first()
-            user = form.username.data #for prior use
+            user = form.username.data
             if check_usr:
                 if bcrypt.check_password_hash(check_usr.password, form.password.data):
                     session['user'] = user
@@ -438,10 +504,10 @@ def login():
                     else:
                         return redirect("/home")
                 else:
-                    flash("Incorrect password :(", "info")
+                    flash("Incorrect password :(")
                     return redirect("/login")
             else:
-                flash("Username you entered does not exist :(", "info")
+                flash("Username you entered does not exist :(")
                 return redirect("/login")
                    
     return render_template("login.html", form=form)
@@ -455,7 +521,7 @@ def logout():
         session.pop('username', None)
         flash("Logged out successfully :)")
         return redirect("/")
-    else:
+    else:                               #Exception Handling -- If not logged in
         flash("You didn't logged in yet XD")
         return redirect("/login")
 
@@ -463,6 +529,9 @@ def logout():
 @login_required
 @admin_required
 def make_admin(username):
+    if not users.query.filter_by(username=username).first(): #Exception Handling -- If wrong username given
+        flash("User does'n exists :( ")
+        return redirect("/home")
     user = users.query.filter_by(username=username).first()
     user.is_admin = True
     db.session.commit()
@@ -470,6 +539,6 @@ def make_admin(username):
     return redirect("/home")
 
 if __name__ =="__main__":
-    app.run(debug=True)
+    app.run(debug=False)
 
 

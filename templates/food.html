@@ -4,15 +4,7 @@
   {% endblock ttl %}
 
   {% block ttl2bd %}
-  <div style="background-color: #7db614; border: 0px; border-radius: 24px;">
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      {% for msg in messages %}
-        <p>{{msg}}</p>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-</div>
+
   <br>
       <h3 class="text-center container"> All available foods...</h3>
       <div>
@@ -66,6 +58,25 @@
           </div>
               {% endif %}
               {% if showing_food==True %}
+                {% if not session['is_admin'] %}
+                  {% if not session['is_owner'] %}
+                   
+                  {% else %}
+                  <form class="text-center container" action="/resturants/foods/add/{{rst_id}}" method="POST">
+                    <div class="row g-3 align-items-center">
+                      <div class="col-auto">
+                        <label for="inputPassword6" class="col-form-label">Add a food item in this resturant. </label>
+                      </div>
+                      <div class="col-auto">
+                        <input type="text" id="inputPassword6" name="food_name" class="form-control" aria-describedby="passwordHelpInline">
+                      </div>
+                    </div>
+                    <br>
+                    <button type="submit" class="btn btn-primary">Add</button>
+                  </form>
+                  {% endif %}
+                {% else %}
+
               <form class="text-center container" action="/resturants/foods/add/{{rst_id}}" method="POST">
                 <div class="row g-3 align-items-center">
                   <div class="col-auto">
@@ -78,5 +89,7 @@
                 <br>
                 <button type="submit" class="btn btn-primary">Add</button>
               </form>
+              
+                {% endif %}
               {% endif %}
   {% endblock ttl2bd %}

@@ -4,17 +4,8 @@
   {% endblock ttl %}
 
   {% block ttl2bd %}
-  <div class="text-center">
-    <div style="background-color: #7db614; border: 0px; border-radius: 24px;">
-      {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        {% for msg in messages %}
-          <p>{{msg}}</p>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-  </div><br>
-<h3>You are now logged in. Now do something :)
+  <div class="text-center"><br>
+<h3>Hungry ? Find a restaurant, find a partner... Meet and Eat ;)
 </h3><br>
 <a class="btn btn-outline-dark" href="/get_token"> <h5>Grab your token</h5></a>
 <br><br>

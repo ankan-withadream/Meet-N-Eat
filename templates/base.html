@@ -64,6 +64,15 @@
         {% endif %}
     </ul>
       </ul>
+      <div class="text-center container" style="margin-top: 0px; margin-bottom: 0px; border-radius: 24px;"><span class="text-center" style="background-color: #7db614; border-radius: 24px;" >
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for msg in messages %}
+               <p style="background-color: #7db614; border-radius: 24px;">{{msg}}</p>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      </span></div>
       <br>
       {% block ttl2bd %}
     {% endblock ttl2bd %}

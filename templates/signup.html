@@ -41,6 +41,15 @@
               <div id="login-column" class="col-md-6">
                   <div id="login-box" class="col-md-12">
                     <form id="login-form" class="form" action="/signup" method="POST">
+                      <p class="form-group" style="background-color: #7db614; margin-top: 0px; margin-bottom: 0px;">
+                        {% with messages = get_flashed_messages() %}
+                          {% if messages %}
+                            {% for msg in messages %}
+                              <p>{{msg}}</p>
+                            {% endfor %}
+                          {% endif %}
+                        {% endwith %}
+                      </p>
                       <h3 class="text-center text-info">Create An Account</h3>
                       <div class="form-group">
                         <label for="username" class="text-info">Username:</label><br>
