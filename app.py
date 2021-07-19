@@ -56,15 +56,15 @@ def admin_required(f):
             return redirect("/home")
     return decorated_function
 
-# @app.errorhandler(HTTPException)   #Error handling
-# def handle_exception(e):
-#     response = str(e.code) + " error: " + str(e.name) + " :( "
-#     if 'user' in session:
-#         flash(response)
-#         return redirect("/home")
-#     else:
-#         flash(response)
-#         return redirect("/")
+@app.errorhandler(HTTPException)   #Error handling
+def handle_exception(e):
+    response = str(e.code) + " error: " + str(e.name) + " :( "
+    if 'user' in session:
+        flash(response)
+        return redirect("/home")
+    else:
+        flash(response)
+        return redirect("/")
 
 class users(db.Model, UserMixin):
     id = db.Column(db.Integer, unique=True)
@@ -610,7 +610,7 @@ def logout():
 
 @app.route("/make_admin/<string:username>")
 @login_required
-# @admin_required
+@admin_required
 def make_admin(username):
     if not users.query.filter_by(username=username).first(): #Exception Handling -- If wrong username given
         flash("User does'n exists :( ")
@@ -758,6 +758,6 @@ def clear_logs():
     return redirect("/logs")
 
 if __name__ =="__main__":
-    app.run(debug=True)
+    app.run(debug=False)
 
 
