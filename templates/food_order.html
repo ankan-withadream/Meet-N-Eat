@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+  {% block ttl %}
+  <title>All Foods</title>
+  {% endblock ttl %}
+
+  {% block ttl2bd %}
+
+        <table class="table table-borderless">
+            <thead>
+                <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Food name</th>
+                <th scope="col"> </th>
+                <th scope="col">Resturants Available</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for i in range(fdlen) %}
+                <tr>
+                    <th scope="row">{{loop.index}}</th>
+                    <td>{{food_name_lst[i]}}</td>
+                    <td>
+                        <a href="/schedule_meal/add/{{rst_id}}/{{food_lst[i]}}" class="btn btn-outline-dark">Add to menu</a>
+                    </td>
+                    <td>
+                        <a href="/foods/resturants/{{food_lst[i]}}" type="button" class="btn btn-outline-dark">View</a></td>
+                </tr>
+            {% endfor %}
+          </tbody>    
+        </table>
+
+        <div class="container my-8 text-center">
+            <h4 class="container text-center">Your cart is: 
+        <p>
+            {% for i in cart %}
+            <span> {{loop.index}} </span>)
+            <span> {{i}} </span>,
+            {% endfor %}
+        </p>
+            </h4>
+            <div class="container text-center my-5">
+                <form action="/schedule_meal/schedule/{{rst_id}}" method="POST">
+                    <p> Please select your meal type:</p>
+                    <div class="container text-center">
+                    <input type="radio" id="breakfast" name="meal_type" value="breakfast">
+                    <label for="breakfast">Breakfast</label>
+                    <input type="radio" id="lunch" name="meal_type" value="lunch">
+                    <label for="lunch">Lunch</label>
+                    <input type="radio" id="supper" name="meal_type" value="supper">
+                    <label for="supper">Supper</label>
+                    <input type="radio" id="dinner" name="meal_type" value="dinner">
+                    <label for="dinner">Dinner</label>
+                    </div>
+                  <button href="/schedule_meal/schedule/{{rst_id}}" class="btn btn-outline-dark my-4" type="submit">Schedule</button>
+        
+                </form>
+            </div>
+            </div>
+
+
+  {% endblock ttl2bd %}

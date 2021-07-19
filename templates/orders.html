@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+  {% block ttl %}
+  <title>
+      {% if session['is_owner'] %}
+          Pending Orders
+      {% else %}
+          My Orders
+      {% endif %}
+  </title>
+  {% endblock ttl %}
+
+  {% block ttl2bd %}
+  <h1 class="text-center my-9">
+  {% if session['is_owner'] %}
+  Pending Orders
+{% else %}
+  My Orders
+{% endif %}
+</h1>
+    {% if session['is_owner'] %}
+        
+        <table class="table table-borderless">
+            <thead>
+                <tr>
+                <th scope="col">Order ID</th>
+                <th scope="col">Food names</th>
+                <th scope="col">Meal Type</th>
+                <th scope="col">Time</th>
+                <th scope="col"> </th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for i in orders %}
+                <tr>
+                    <th scope="row">{{i.order_id}}</th>
+                    <td>{{i.food_lst}}</td>
+                    <td>{{i.meal_type}}</td>
+                    <td>{{i.order_time}}</td>
+                    <td>
+                        <a href="/pending_orders/check/{{i.order_id}}" class="btn btn-outline-dark">Mark Completed</a>
+                    </td>
+                </tr>
+            {% endfor %}
+          </tbody>    
+        </table>
+        {% else %}
+        {% if not session['is_admin'] %}
+            
+        
+        <div class="container my-8 text-center">
+            <h4 class="container text-center my-8">Your orders are: 
+                <ul class="py-8">
+                    {% for i in orders %}
+                    <li class="p-4">Foods:
+                        <span> {{i.food_lst}} </span>,<br> Meal type:
+                        <span> {{i.meal_type}} </span>,<br> Order time:
+                        <span> {{i.order_time}} </span><br>
+                        <a href="/my_orders/cancel/{{i.order_id}}" class="btn btn-outline-dark my-2">Cancel Order</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </h4>
+            
+        </div>
+        {% else %}
+        <table class="table table-borderless">
+            <thead>
+                <tr>
+                <th scope="col">Order ID</th>
+                <th scope="col">Food names</th>
+                <th scope="col">Meal Type</th>
+                <th scope="col">Time</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for i in orders %}
+                <tr>
+                    <th scope="row">{{i.order_id}}</th>
+                    <td>{{i.food_lst}}</td>
+                    <td>{{i.meal_type}}</td>
+                    <td>{{i.order_time}}</td>
+                </tr>
+            {% endfor %}
+          </tbody>    
+        </table>
+        {% endif %}
+
+        {% endif %}
+
+  {% endblock ttl2bd %}

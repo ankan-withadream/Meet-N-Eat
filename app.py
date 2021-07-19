@@ -56,15 +56,15 @@ def admin_required(f):
             return redirect("/home")
     return decorated_function
 
-@app.errorhandler(HTTPException)   #Error handling
-def handle_exception(e):
-    response = str(e.code) + " error: " + str(e.name) + " :( "
-    if 'user' in session:
-        flash(response)
-        return redirect("/home")
-    else:
-        flash(response)
-        return redirect("/")
+# @app.errorhandler(HTTPException)   #Error handling
+# def handle_exception(e):
+#     response = str(e.code) + " error: " + str(e.name) + " :( "
+#     if 'user' in session:
+#         flash(response)
+#         return redirect("/home")
+#     else:
+#         flash(response)
+#         return redirect("/")
 
 class users(db.Model, UserMixin):
     id = db.Column(db.Integer, unique=True)
@@ -124,6 +124,20 @@ class update_req(db.Model):
     new_name = db.Column(db.String)
     new_address = db.Column(db.String)
 
+class Orders(db.Model):
+    order_id = db.Column(db.Integer, primary_key=True)
+    orders = db.Column(db.String, nullable=True)
+    food_lst = db.Column(db.String, nullable=True)
+    username = db.Column(db.String, nullable=True)
+    rstrnt_id = db.Column(db.Integer, nullable=True)
+    meal_type = db.Column(db.String, nullable=True)
+    order_time = db.Column(db.DateTime, nullable=True)
+
+class Logs(db.Model):
+    log_id = db.Column(db.Integer, primary_key=True)
+    log_msg = db.Column(db.String, nullable=True)
+    username = db.Column(db.String, nullable=True)
+    log_time = db.Column(db.DateTime, nullable=True)
 
 @app.route("/")
 def home():
@@ -139,8 +153,9 @@ def get_home():
 @app.route("/resturants")
 # @login_required
 def all_resturants():
+    scheduling = False
     show_rstrnt = rstrnt.query.all()
-    return render_template('all_resturants.html', rstrnt=show_rstrnt)
+    return render_template('all_resturants.html', rstrnt=show_rstrnt, scheduling = scheduling)
 
 @app.route("/resturants/foods/<int:id>")
 @login_required
@@ -168,7 +183,7 @@ def show_available_foods(id):
 @owner_or_admin_required
 def add_food_in_resturant(rst_id):
     if request.method=='POST':
-        if not rstrnt.query.filter_by(id=id).first(): #Exception Handling -- If wrong resturant id entered
+        if not rstrnt.query.filter_by(id=rst_id).first(): #Exception Handling -- If wrong resturant id entered
             flash("No such restaurant found :(")
             return redirect(f"/resturants")
         food2badd_name = request.form['food_name']
@@ -185,6 +200,14 @@ def add_food_in_resturant(rst_id):
                 else:
                     food_id_xs = food_id_xs + rst_id_s
                     food_id_x.rstrnt_ids = food_id_xs
+                    db.session.commit()
+                    username = session['username']                 #Saving in logs
+                    food_obj = food.query.filter_by(id=food_id).first()
+                    food_name = food_obj.name
+                    rst_obj = rstrnt.query.filter_by(id=rst_id).first()
+                    rstrnt_name = rst_obj.rstrnt_name
+                    log_msg = f"{username} added a food item {food_name} to {rstrnt_name}"
+                    db.session.add(Logs(log_msg=log_msg, username=username, log_time=datetime.datetime.utcnow()))
                     db.session.commit()
                     return redirect(f"/resturants/foods/{rst_id}")
         flash("This food item does not exist in database :(  please add this food first")
@@ -204,6 +227,14 @@ def delete_food_from_resturant(rst_id, food_id):
     new_rstids = to_be_dlt.rstrnt_ids.replace(str(rst_id), "")
     db.session.delete(to_be_dlt)
     db.session.add(resturant_availabelity(food_id=food_id, rstrnt_ids=new_rstids))
+    db.session.commit()
+    username = session['username']                 #Saving in logs
+    food_obj = food.query.filter_by(id=food_id).first()
+    food_name = food_obj.name
+    rst_obj = rstrnt.query.filter_by(id=rst_id).first()
+    rstrnt_name = rst_obj.rstrnt_name
+    log_msg = f"{username} added a food item {food_name} to {rstrnt_name}"
+    db.session.add(Logs(log_msg=log_msg, username=username, log_time=datetime.datetime.utcnow()))
     db.session.commit()
     return redirect(f"/resturants/foods/{rst_id}")
 
@@ -243,6 +274,12 @@ def add_food():
         this_food_ra = resturant_availabelity(food_id=food_id, rstrnt_ids="")
         db.session.add(this_food_ra)
         db.session.commit()
+        username = session['username']                 #Saving in logs
+        food_obj = food.query.filter_by(id=food_id).first()
+        food_name = food_obj.name
+        log_msg = f"{username} added a food item {food_name}"
+        db.session.add(Logs(log_msg=log_msg, username=username, log_time=datetime.datetime.utcnow()))
+        db.session.commit()
         flash("Food added in list :) ")
         return redirect("/foods/add")
         
@@ -261,6 +298,12 @@ def delete_food(id):
     db.session.delete(get_food)
     db.session.delete(get_food_from_ra)
     db.session.commit()
+    username = session['username']                 #Saving in logs
+    food_obj = food.query.filter_by(id=id).first()
+    food_name = food_obj.name
+    log_msg = f"{username} deleted a food item {food_name}"
+    db.session.add(Logs(log_msg=log_msg, username=username, log_time=datetime.datetime.utcnow()))
+    db.session.commit()
     return redirect("/foods")
 
 @app.route("/update/<int:id>", methods=['GET', 'POST'])
@@ -272,8 +315,16 @@ def update_rstrnt(id):
         return redirect("/resturants")
     updt_rstrnt = rstrnt.query.filter_by(id=id).first()
     if request.method == 'POST':
+        old_name = updt_rstrnt.rstrnt_name
+        old_loct = updt_rstrnt.rstrnt_loct
         updt_rstrnt.rstrnt_name = request.form['name']
         updt_rstrnt.rstrnt_loct = request.form['loct']
+        db.session.commit()
+        username = session['username']                    #Saving in Logs
+        rst_obj = rstrnt.query.filter_by(id=id).first()
+        rstrnt_name = rst_obj.rstrnt_name
+        log_msg = f"{username} updated a resturant {rstrnt_name}'s data: {old_name} to {updt_rstrnt.rstrnt_name}  and {old_loct} to {updt_rstrnt.rstrnt_loct}"
+        db.session.add(Logs(log_msg=log_msg, username=username, log_time=datetime.datetime.utcnow()))
         db.session.commit()
         return redirect("/resturants")
     return render_template("update.html", updt_rstrnt=updt_rstrnt)
@@ -287,6 +338,12 @@ def dlt_rstrnt(id):
         return redirect("/resturants")
     dlt_rst = rstrnt.query.filter_by(id=id).first()
     db.session.delete(dlt_rst)
+    db.session.commit()
+    username = session['username']                    #Saving in Logs
+    rst_obj = rstrnt.query.filter_by(id=id).first()
+    rstrnt_name = rst_obj.rstrnt_name
+    log_msg = f"{username} deleted a resturant {rstrnt_name}"
+    db.session.add(Logs(log_msg=log_msg, username=username, log_time=datetime.datetime.utcnow()))
     db.session.commit()
     return redirect("/resturants")
 
@@ -306,6 +363,10 @@ def add_resturant():
             new_rstrnt = rstrnt(rstrnt_name=request.form['rstrnt_name'], rstrnt_loct=loct)
             try:            #Exception Handling -- If resturant name already exists
                 db.session.add(new_rstrnt)
+                db.session.commit()
+                username = session['username']                 #Saving in logs
+                log_msg = f"{username} added a resturant {new_rstrnt.rstrnt_name}"
+                db.session.add(Logs(log_msg=log_msg, username=username, log_time=datetime.datetime.utcnow()))
                 db.session.commit()
                 if check_user.is_owner == True:
                     check_user.owned_rst_id = new_rstrnt.id
@@ -408,6 +469,10 @@ def suggested_update(id):
         suggest = update_req(req_rst_id=id, new_name=name, new_address=loct_replaced)
         db.session.add(suggest)
         db.session.commit()
+        username = session['username']                 #Saving in logs
+        log_msg = f"{username} suggested an update for resturant {rst.rstrnt_name}: {rst.rstrnt_name} to {suggest.new_name}  and {rst.rstrnt_loct} to {suggest.new_address} >> Update request id: {suggest.req_id} and resturant id: {rst.id}"
+        db.session.add(Logs(log_msg=log_msg, username=username, log_time=datetime.datetime.utcnow()))
+        db.session.commit()
         flash("Your valuable suggestion has been successfully sent to server ^_^")
         return redirect("/resturants")
     return render_template('add.html', suggesting=suggesting, old_name=rst.rstrnt_name, old_loct=old_loct, rst_id=id)
@@ -435,6 +500,10 @@ def approve_suggestions(req_id, rst_id):
     rst.rstrnt_loct = req.new_address
     db.session.delete(req)
     db.session.commit()
+    username = session['username']                 #Saving in logs
+    log_msg = f"{username} approved a suggestion: Request id: {req_id} for Resturant id: {rst_id}"
+    db.session.add(Logs(log_msg=log_msg, username=username, log_time=datetime.datetime.utcnow()))
+    db.session.commit()
     return redirect("/suggestion")
 
 @app.route("/suggestion/delete/<int:req_id>")
@@ -446,6 +515,10 @@ def delete_suggestion(req_id):
         return redirect("/suggestion")
     req = update_req.query.filter_by(req_id=req_id).first()
     db.session.delete(req)
+    db.session.commit()
+    username = session['username']                 #Saving in logs
+    log_msg = f"{username} approved a suggestion: Request id: {req_id}"
+    db.session.add(Logs(log_msg=log_msg, username=username, log_time=datetime.datetime.utcnow()))
     db.session.commit()
     return redirect("/suggestion")
 
@@ -461,6 +534,9 @@ def signup():
             h_pass = bcrypt.generate_password_hash(form.password.data)
             user = users(username=username, password=h_pass)
             db.session.add(user)
+            db.session.commit()
+            log_msg = f"{user.username} created a new account"     #Saving in Logs
+            db.session.add(Logs(log_msg=log_msg, username=user.username, log_time=datetime.datetime.utcnow()))
             db.session.commit()
             if request.form["is_owner"] == "true":
                 user.is_owner = True
@@ -486,6 +562,9 @@ def login():
                 if bcrypt.check_password_hash(check_usr.password, form.password.data):
                     session['user'] = user
                     session['username'] = check_usr.username
+                    log_msg = f"{check_usr.username} logged in"
+                    db.session.add(Logs(log_msg=log_msg, username=check_usr.username, log_time=datetime.datetime.utcnow()))
+                    db.session.commit()
                     next = request.form['next']
                     session['next'] = next
                     if check_usr.is_admin == True:
@@ -515,6 +594,10 @@ def login():
 @app.route("/logout")
 def logout():
     if 'user' in session:
+        username = session['username']
+        log_msg = f"{username} logged out"
+        db.session.add(Logs(log_msg=log_msg, username=username, log_time=datetime.datetime.utcnow()))
+        db.session.commit()
         session.pop('user', None)
         session.pop('is_admin', None)
         session.pop('is_owner', None)
@@ -527,7 +610,7 @@ def logout():
 
 @app.route("/make_admin/<string:username>")
 @login_required
-@admin_required
+# @admin_required
 def make_admin(username):
     if not users.query.filter_by(username=username).first(): #Exception Handling -- If wrong username given
         flash("User does'n exists :( ")
@@ -535,10 +618,146 @@ def make_admin(username):
     user = users.query.filter_by(username=username).first()
     user.is_admin = True
     db.session.commit()
+    username_now = session['username']
+    log_msg = f"{username} was made admin by {username_now}"
+    db.session.add(Logs(log_msg=log_msg, username=username_now, log_time=datetime.datetime.utcnow()))
+    db.session.commit()
     flash("He is now a admin")
     return redirect("/home")
 
+@login_required
+@app.route("/schedule_meal")
+def show_schedule_meal():
+    scheduling = True
+    rstrnts = rstrnt.query.all()
+    return render_template('all_resturants.html', scheduling = scheduling, rstrnt=rstrnts)
+
+@login_required
+@app.route("/schedule_meal/<int:rst_id>")
+def schedule_meal(rst_id):
+    food_lst = []
+    food_name_lst = []
+    fds = resturant_availabelity.query.all()
+    for i in fds:
+        for j in i.rstrnt_ids:
+            if (int(j)==rst_id):
+                fdid = i.food_id
+                food_lst.append(fdid)
+    for i in food_lst:
+        x = food.query.get(i)
+        food_name_lst.append(x.name)
+    if 'orders' not in session:
+        order = ""
+        session['orders'] = order
+    cart_ids = session['orders']
+    cart = []
+    for i in cart_ids:
+        food_x = food.query.filter_by(id=str(i)).first()
+        cart.append(food_x.name)
+
+    return render_template("food_order.html",food_lst=food_lst, food_name_lst=food_name_lst, fdlen = len(food_lst), rst_id=rst_id, cart=cart)
+
+@login_required
+@app.route("/schedule_meal/add/<int:rst_id>/<int:food_id>")
+def add_to_menu(rst_id, food_id):
+    if 'orders' not in session:
+        order = ""
+        session['orders'] = order 
+    old_order = session['orders']
+    new_order = str(old_order) + str(food_id)
+    session['orders'] = new_order
+    flash("Food added to menu :)") 
+    return redirect(f"/schedule_meal/{rst_id}")
+
+@login_required
+@app.route("/schedule_meal/schedule/<int:rst_id>", methods=['GET', 'POST'])
+def schedule_meal_order(rst_id):
+    if request.method == 'POST':
+        orders = session['orders']
+        foods = ""
+        for i in orders:
+            food_id = int(i)
+            the_food = food.query.filter_by(id=food_id).first()
+            foods = foods + str(the_food.name) + ", "
+        username = session['username']
+        meal_type = request.form['meal_type']
+        order_x = Orders(orders=orders, username=username, food_lst=foods, rstrnt_id=rst_id, meal_type = meal_type, order_time = datetime.datetime.utcnow() )
+        db.session.add(order_x)
+        db.session.commit() #Saving in logs
+        log_msg = f"{username} Scheduled an meal. Order id: {order_x.order_id}"
+        db.session.add(Logs(log_msg=log_msg, username=username, log_time=datetime.datetime.utcnow()))
+        db.session.commit()
+        session.pop('orders', None)
+        flash("Your meal has been scheduled :)")
+        return redirect("/schedule_meal")
+    return render_template("food_order.html")
+
+@login_required
+@owner_or_admin_required
+@app.route("/pending_orders")
+def show_pending_orders():
+    if session['is_owner']:
+        username = session['username']
+        user = users.query.filter_by(username=username).first()
+        rst_id = user.owned_rst_id
+        orders = Orders.query.filter_by(rstrnt_id=rst_id).all()
+        return render_template("orders.html", orders=orders)
+    else:
+        orders = Orders.query.all()
+        return render_template("orders.html", orders=orders)
+
+@login_required
+@owner_or_admin_required
+@app.route("/pending_orders/check/<int:order_id>")
+def check_pending_order(order_id):
+    order2be = Orders.query.filter_by(order_id=order_id).first()
+    db.session.delete(order2be)
+    db.session.commit()
+    username = session['username']                 #Saving in logs
+    log_msg = f"{username} checked an order as completed. Order id: {order_id}"
+    db.session.add(Logs(log_msg=log_msg, username=username, log_time=datetime.datetime.utcnow()))
+    db.session.commit()
+    flash("Order has been checked as completed successfully :)")
+    return redirect("/pending_orders")
+
+@login_required
+@app.route("/my_orders")
+def show_my_orders():
+    username = session['username']
+    orders = Orders.query.filter_by(username=username).all()
+    return render_template("orders.html", orders=orders)
+
+@login_required
+@app.route("/my_orders/cancel/<int:order_id>")
+def cancel_my_orders(order_id):
+    order2be = Orders.query.filter_by(order_id=order_id).first()
+    db.session.delete(order2be)
+    db.session.commit()
+    username = session['username']                 #Saving in logs
+    log_msg = f"{username} canceled an order. Order id: {order_id}"
+    db.session.add(Logs(log_msg=log_msg, username=username, log_time=datetime.datetime.utcnow()))
+    db.session.commit()
+    flash("Your scheduled meal has been canceled")
+    return redirect("/home")
+
+@app.route("/logs")
+@login_required
+@admin_required
+def all_activities():
+    logs = Logs.query.all()
+    return render_template("logs.html", logs=logs)
+
+@app.route("/clear_logs")
+@login_required
+@admin_required
+def clear_logs():
+    logs = Logs.query.all()
+    for i in logs:
+        db.session.delete(i)
+        db.session.commit()
+    return redirect("/logs")
+
 if __name__ =="__main__":
-    app.run(debug=False)
+    app.run(debug=True)
 
 

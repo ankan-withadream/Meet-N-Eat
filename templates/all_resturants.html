@@ -1,11 +1,17 @@
 {% extends 'base.html' %}
   {% block ttl %}
-  <title>Resturant</title>
+  <title>Restaurants</title>
   {% endblock ttl %}
 
   {% block ttl2bd %}
   <br>
-      <h3 class="text-center container"> All available resturants...</h3>
+    {% if scheduling %}
+      
+    <h3 class="text-center container"> Choose a restaurant...</h3>
+    {% else %}
+      
+    <h3 class="text-center container"> All available resturants...</h3>
+    {% endif %}
     <div>
         <table class="table table-borderless">
             <thead>
@@ -27,6 +33,10 @@
                         {{(i.rstrnt_loct).replace('+', " ")}}
                       </td>
                       <td><a href="/resturants/foods/{{i.id}}" type="button" class="btn btn-outline-dark">All Available Foods</button>
+                          {% if scheduling %}
+                          <a href="/schedule_meal/{{i.id}}" type="button" class="btn btn-outline-dark">Schedule here</button>
+                      
+                          {% endif %}
                       </td>
                       <td>
                         {% if session['is_admin'] %}

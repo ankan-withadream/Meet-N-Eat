@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+  {% block ttl %}
+  <title>All Logs</title>
+  {% endblock ttl %}
+
+  {% block ttl2bd %}
+  <table class="table table-borderless">
+    <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Log messages</th>
+          <th scope="col">Username</th>
+          <th scope="col">Time</th>
+        </tr>
+      </thead>
+      <tbody>
+            {% for i in logs %}
+                <tr>
+                    <th scope="row">{{loop.index}}</th>
+                    <td>{{i.log_msg}}</td>
+                    <td>{{i.username}}</td>
+                    <td>{{i.log_time}}</td>
+                </tr>
+            {% endfor %}
+          </tbody>    
+        </table>
+
+        <div class="container text-center my-9">
+          <a class="btn btn-danger" href="/clear_logs">Clear All</a>
+        </div>
+
+
+  {% endblock ttl2bd %}
